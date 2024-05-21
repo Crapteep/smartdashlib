@@ -30,11 +30,14 @@ class ConnectionState:
     RECONNECT_DELAY = 5
 
 class ClientConnection:
-    def __init__(self, token: str, server: str = "127.0.0.1", port: str = "8000"):
+    def __init__(self, token: str, server: str = "127.0.0.1", port=None):
         self.server = server
         self.port = port
         self.token = token
-        self.uri = f"ws://{self.server}:{self.port}/ws/?token={self.token}"
+        if self.port is None:
+            self.uri = f"wss://{self.server}/ws/?token={self.token}"
+        else:
+            self.uri = f"wss://{self.server}:{self.port}/ws/?token={self.token}"
         self._state = ConnectionState.CONNECTING
         self._websocket = None
         self._recv_lock = asyncio.Lock()
@@ -43,7 +46,7 @@ class ClientConnection:
         return self._state == ConnectionState.AUTHENTICATED
 
 class SmartDash(ClientConnection):
-    def __init__(self, token: str, server: str = "127.0.0.1", port: str = "8000"):
+    def __init__(self, token: str, server: str = "127.0.0.1", port=None):
         super().__init__(token, server, port)
         self._on_data_callbacks: Dict[int, List[Callable[[Any], None]]] = {}
         self._handle_data_task: Union[asyncio.Task, None] = None
