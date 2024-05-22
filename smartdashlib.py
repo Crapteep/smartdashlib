@@ -100,13 +100,15 @@ class SmartDash(ClientConnection):
         await asyncio.sleep(ConnectionState.RECONNECT_DELAY)
         await self.connect()
 
-    def on_data(self, virtual_pin: int) -> Callable:
-        def decorator(func: Callable[[Any], None]) -> Callable[[Any], None]:
+    def on_data(self, virtual_pin: int, instance: Any) -> Callable:
+        def decorator(func: Callable) -> Callable:
+            async def wrapper(data, *args, **kwargs):
+                await func(data, instance, *args, **kwargs)
             if virtual_pin in self._on_data_callbacks:
-                self._on_data_callbacks[virtual_pin].append(func)
+                self._on_data_callbacks[virtual_pin].append(wrapper)
             else:
-                self._on_data_callbacks[virtual_pin] = [func]
-            return func
+                self._on_data_callbacks[virtual_pin] = [wrapper]
+            return wrapper
         return decorator
 
     async def write(self, pin: str, value: Union[int, str, float]) -> None:
