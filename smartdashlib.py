@@ -100,10 +100,10 @@ class SmartDash(ClientConnection):
         await asyncio.sleep(ConnectionState.RECONNECT_DELAY)
         await self.connect()
 
-    def on_data(self, virtual_pin: int, instance: Any) -> Callable:
+    def on_data(self, virtual_pin: int) -> Callable:
         def decorator(func: Callable) -> Callable:
             async def wrapper(data, *args, **kwargs):
-                await func(data, instance, *args, **kwargs)
+                await func(data, *args, **kwargs)
             if virtual_pin in self._on_data_callbacks:
                 self._on_data_callbacks[virtual_pin].append(wrapper)
             else:
