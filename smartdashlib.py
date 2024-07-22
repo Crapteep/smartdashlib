@@ -4,7 +4,7 @@ import json
 import random
 import logging
 from typing import Callable, Dict, Any, List, Union
-from custom_decorators import disabled
+from utils.custom_decorators import disabled
 from uuid import uuid4
 
 # Configure logging
@@ -31,7 +31,7 @@ class ConnectionState:
     RECONNECT_DELAY = 5
 
 class ClientConnection:
-    def __init__(self, token: str, server: str = "127.0.0.1", port=None):
+    def __init__(self, token: str, server, port):
         self.server = server
         self.port = port
         self.token = token
@@ -47,7 +47,7 @@ class ClientConnection:
         return self._state == ConnectionState.AUTHENTICATED
 
 class SmartDash(ClientConnection):
-    def __init__(self, token: str, server: str = "127.0.0.1", port=None):
+    def __init__(self, token: str, server: str = "smartdash-ceu4.onrender.com", port=None):
         super().__init__(token, server, port)
         self._on_data_callbacks: Dict[int, List[Callable[[Any], None]]] = {}
         self._handle_data_task: Union[asyncio.Task, None] = None
