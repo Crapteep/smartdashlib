@@ -5,7 +5,7 @@ import asyncio
 """use the on_data decorator, which calls the following function after receiving data on the used pin, or simply send data in a while loop
 """
 async def main():
-    TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkZXZpY2VfaWQiOiI2NjllZDBmOTNjNWMxNmM0ZDQwZjY4ZjciLCJ0eXBlIjoicnBpIiwiZXhwIjoxNzUzMjIwMjE3fQ.7DrAfleeo5_cnT4wUymGaXwVY5gy_lq7b8fzHKK7QOg"
+    TOKEN = "YOUR_TOKEN"
 
     smart_dash = SmartDash(token=TOKEN)
     await smart_dash.run()
