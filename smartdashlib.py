@@ -5,6 +5,7 @@ import random
 import logging
 from typing import Callable, Dict, Any, List, Union
 from custom_decorators import disabled
+from uuid import uuid4
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,9 +36,9 @@ class ClientConnection:
         self.port = port
         self.token = token
         if self.port is None:
-            self.uri = f"wss://{self.server}/ws/?token={self.token}"
+            self.uri = f"wss://{self.server}/api/v1/ws/?token={self.token}"
         else:
-            self.uri = f"wss://{self.server}:{self.port}/ws/?token={self.token}"
+            self.uri = f"wss://{self.server}:{self.port}/api/v1/ws/?token={self.token}"
         self._state = ConnectionState.CONNECTING
         self._websocket = None
         self._recv_lock = asyncio.Lock()
@@ -155,13 +156,17 @@ class SmartDash(ClientConnection):
                 data = await self.receive_data()
                 if isinstance(data, list):
                     for item in data:
-                        await self.process_data(item)
+                        if isinstance(item, dict):
+                            await self.process_data(item)
+                        else:
+                            logging.warning(f"Invalid item in list: {item}")
                 elif isinstance(data, dict):
                     await self.process_data(data)
                 else:
-                    logging.warning("Received invalid data format.")
+                    logging.warning(f"Received invalid data format: {data}")
         except websockets.exceptions.ConnectionClosedError:
             logging.error("WebSocket connection closed unexpectedly.")
+            asyncio.sleep(2)
         finally:
             self._handle_data_task = None
 
@@ -186,8 +191,7 @@ class SmartDash(ClientConnection):
                     await self.connect()
 
                 if self._handle_data_task is None or self._handle_data_task.done():
-                    self._handle_data_task = asyncio.create_task(self.handle_data(), name=f'task_{random.randint(0,10000)}')
-
+                    self._handle_data_task = asyncio.create_task(self.handle_data(), name=uuid4())
                 await asyncio.gather(self._handle_data_task)
 
             except Exception as e:
